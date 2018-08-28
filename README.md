@@ -35,6 +35,7 @@ The *init.sh* file will execute a few different things:
 - If no config
 	- Get name for slack admin and home channel
 	- Bot's required OAuth Access Token
+	- Get folder name of the project (Should be in same folder as DevBot)
 	- Add docker services for the connected project
 	- Get path to save backups (command executed)
 
