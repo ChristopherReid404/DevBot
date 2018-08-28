@@ -1,0 +1,15 @@
+{
+    // VS Code Settings
+    "files.eol": "\n",
+    "editor.tabSize": 2,
+    "editor.insertSpaces": false,
+    "files.insertFinalNewline": false,
+    "python.pythonPath": "${workspaceFolder}/env/bin/python",
+
+    "markdownlint.config": {
+        "default": true,
+        "MD007": { "indent": 2 },
+        "MD013": false,
+        "no-hard-tabs": false
+    }
+}
