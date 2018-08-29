@@ -7,7 +7,7 @@ sudo chmod 0777 docker.sh
 sudo chmod 0777 init.sh
 # sudo chmod 0777 ngrok.sh
 sudo chmod 0777 nuke.sh
-sudo chmod 0777 service.sh
+sudo chmod 0777 project.sh
 
 # Constant Variables
 configFile="../.config.txt"
