@@ -6,7 +6,7 @@ echo "$0 Global Service\n"
 # Constant Variables
 configFile="../.config.txt"
 xTerminals=2
-yTerminals=3
+yTerminals=6
 command="$1"
 
 # Initalize Param Variables

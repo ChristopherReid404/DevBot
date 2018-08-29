@@ -12,9 +12,12 @@ else
 	echo "No Instance"
 fi
 
+token=""
 # Read token from .key.txt
-while read -r token; do
-	echo $token
+while read -r line; do
+	if [ "$line" != "" ]; then
+		token=$line
+	fi
 done < "$keyFile"
 
 # Construct start script to run in terminal

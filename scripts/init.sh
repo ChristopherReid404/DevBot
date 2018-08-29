@@ -30,10 +30,11 @@ fi
 
 # Check if key.txt file exists
 if [ ! -f $keyFile ]; then
-	slackKey="For DevBot to operate it needs the workspace token saved to easily restart, \nthis is not commited to github, only saved locally within the 'key.txt' file"
+	printf "For DevBot to operate it needs the workspace token saved to easily restart, \nthis is not commited to github, only saved locally within the 'key.txt' file"
+	slackKey=""
 	while [ "$slackKey" = "" ]; do
 		printf "\n"
-		read -p "Enter / Paste the 'Bot User OAuth Access Token' provided by Slack: " key
+		read -p "Enter / Paste the 'Bot User OAuth Access Token' provided by Slack: " slackKey
 		if [ "$slackKey" != '' ]; then
 			echo $slackKey > $keyFile
 		fi
