@@ -69,6 +69,6 @@ done < $configFile
 
 # Restart bot, if needed
 if $bot; then
-	script="bot.sh; exit; exec $SHELL"
+	script="sh bot.sh; exit; exec $SHELL"
 	sudo gnome-terminal -e "sh -c '$script'"
 fi
