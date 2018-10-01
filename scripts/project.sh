@@ -5,8 +5,8 @@ echo "$0 Global Service\n"
 
 # Constant Variables
 configFile="../.config.txt"
-xTerminals=2
-yTerminals=3
+xTerminals=2 # Later will be added to configs
+yTerminals=7 # Later will be added to configs
 command="$1"
 
 # Initalize Param Variables
@@ -69,6 +69,6 @@ done < $configFile
 
 # Restart bot, if needed
 if $bot; then
-	script="bot.sh; exit; exec $SHELL"
+	script="sh bot.sh; exit; exec $SHELL"
 	sudo gnome-terminal -e "sh -c '$script'"
 fi

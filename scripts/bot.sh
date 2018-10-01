@@ -12,11 +12,14 @@ else
 	echo "No Instance"
 fi
 
+token=""
 # Read token from .key.txt
-while read -r token; do
-	echo $token
+while read -r line; do
+	if [ "$line" != "" ]; then
+		token=$line
+	fi
 done < "$keyFile"
 
 # Construct start script to run in terminal
 script="cd ..; source env/bin/activate; export SLACK_BOT_TOKEN='$token'; python devBot.py"
-sudo gnome-terminal -- bash -c "${script}; sleep 10; exit; exec $SHELL"
+sudo gnome-terminal -- bash -c "${script}; exit; exec $SHELL"
