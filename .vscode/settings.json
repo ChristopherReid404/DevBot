@@ -11,5 +11,14 @@
         "MD007": { "indent": 2 },
         "MD013": false,
         "no-hard-tabs": false
-    }
+    },
+
+	"prettier.jsonEnable": [ "json" ],
+	"prettier.useTabs": true,
+	"prettier.statusBar": true,
+	"prettier.tabWidth": 2,
+    "prettier.printWidth": 120,
+    
+    "python.linting.enabled": true,
+    "python.linting.pylintEnabled": true
 }

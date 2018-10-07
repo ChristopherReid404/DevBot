@@ -12,4 +12,8 @@ ngrok
 ngrok.sh
 
 # Exclude user-saved data
-*.txt
+.key
+config.*.json
+
+# Old format
+.config

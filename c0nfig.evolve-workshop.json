@@ -1,0 +1,49 @@
+{
+	"slack": {
+		"root": {
+			"username": "reid.christopher.404",
+			"UserId": ""
+		},
+		"admins": [],
+		"channels": {
+			"Server": "development",
+			"Report": "vip"
+		}
+	},
+	"project": {
+		"dir": "../evolve-workshop",
+		"frontEnd": {
+			"dir": "frontEnd",
+			"dev": {
+				"build": "yarn install",
+				"start": "yarn start",
+				"stop": "fuser -k 3000/tcp"
+			},
+			"prod": {
+				"build": "yarn build",
+				"start": "yarn run deploy"
+			}
+		},
+		"storybook": {
+			"dir": "frontEnd",
+			"dev": {
+				"build": "yarn install",
+				"start": "yarn run storybook",
+				"stop": "fuser -k 3001/tcp"
+			},
+			"prod": {
+				"build": "yarn run storybook-build",
+				"start": "yarn run storybook-deploy"
+			}
+		},
+		"microServices": {
+			"dir": "microServices",
+			"nodeScrapper": {
+				"dir": "nodeScrapper",
+				"dev": {
+					"build": "yarn install"
+				}
+			}
+		}
+	}
+}
