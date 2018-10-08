@@ -1,4 +1,3 @@
-
 #
 # Config Util
 # 
@@ -6,15 +5,13 @@ import os
 import json
 import fileinput
 
-configFile="../config.cpm-2.0"
-
 def load_config():
-	with open('%s.json' % configFile) as data_file:
+	with open('config.json') as data_file:
 		data = json.load(data_file)
 	return data
 
 def save_config(json_data):
-	with open('%s.json' % configFile, 'w') as data_file:
+	with open('config.json', 'w') as data_file:
 		data_file.write(json.dumps(json_data, indent=2, sort_keys=True))
 
 def get_slack_root():
@@ -99,9 +96,9 @@ def get_project_service_count():
 
 def add_project_service(dir, name, delay, order):
 	currentCount = get_project_service_count()
-	if order > currentCount
+	if order > currentCount:
 		order = currentCount
-	else if order < 0
+	elif order < 0:
 		order = 0
 	json_data = load_config()
 	services = json_data['project']['services']
@@ -142,3 +139,34 @@ def set_display_window(top, right, bottom, left):
 	window['leftPadding'] = left
 	json_data['display']['window'] = window
 	save_config(json_data)
+
+def calculate():
+	project = get_project()
+	display = get_display()
+	terminals = display['terminals']
+	servicesCount = len(project['services'])
+	terminalsCount = terminals['perHeight'] * terminals['perWidth']
+	if servicesCount > terminalsCount:
+		print('Warning: Services outnumber Terminals, some terminals will be hidden')
+	window = display['window']
+	monitor = display['monitor']
+	w_width = monitor['width'] - window['rightPadding']
+	w_height = monitor['height'] - window['bottomPadding']
+	t_width = w_width / terminals['perWidth'] / 10
+	t_height = w_height / terminals['perHeight'] / 30
+	col = 0
+	row = terminals['perHeight'] - 1
+	for index, service in enumerate(project['services']):
+		project['services'][index]['t_x'] = col * t_width * 10
+		project['services'][index]['t_y'] = row * t_height * 30
+		col = col + 1
+		if col >= terminals['perWidth']:
+			col = 0
+			row = row - 1
+	project['t_size'] = {}
+	project['t_size']['width'] = t_width
+	project['t_size']['height'] = t_height
+
+	config = load_config()
+	config['project'] = project
+	save_config(config)

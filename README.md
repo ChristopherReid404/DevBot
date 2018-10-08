@@ -1,5 +1,7 @@
 # DevBot
 
+[ README is Outdated, Update Coming Soon ]
+
 DevBot allows simply control over a project setup to use docker to help speed development when a local server is required.
 
 DevBot can start / stop / restart / destroy a group of docker containers along with handling the overal project updating (github) and local backups.  There are a few extra commands added to simply give more features ( weather )

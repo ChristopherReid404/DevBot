@@ -6,11 +6,13 @@ import json
 from datetime import datetime
 from slackclient import SlackClient
 import fileinput
+import logging
 
 from commands.serverCommands import handle_server_command
 from commands.botCommands import handle_bot_command
 from commands.weatherCommands import handle_weather_command
 from commands.helpCommands import handle_help_command
+from commands.config_util import load_config, save_config
 
 # instantiate Slack client
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -22,9 +24,6 @@ adminId = None
 
 # runtime variables
 running = True
-
-# Constant variables
-configFile=".config.txt"
 
 # commands
 SERVER_COMMAND = "server"
@@ -96,79 +95,64 @@ def parse_direct_mention(message_text):
     # the first group contains the username, second contains the message
     return (matches.group(1), matches.group(2).strip()) if matches else (None, None)
 
-def fetch_home_channel():
-    name = ""
-    with open(configFile, "r") as config:
-        lines = config.readlines()
-        for line in lines:
-            content = line.split()
-            if content[0] == '-sc':
-                name = content[1]
-                if len(content) > 2:
-                    return content[2]
-                else:
-                    break
-    if name != "":
-        channels_call = slack_client.api_call("channels.list")
-        if channels_call.get('ok'):
-            channels = channels_call["channels"]
+def fetch_channel_ids():
+    config = load_config()
+    c_channels = config['slack']['channels']
+    channels_call = slack_client.api_call("channels.list")
+    if channels_call.get('ok'):
+        channels = channels_call["channels"]
+        if c_channels['home']['id'] == '':
             for c in channels:
-                if c["name"] == name:
-                    Id = c["id"]
-                    pattern="-sc " + name
-                    subst="-sc " + name + " " + Id
-                    for line in fileinput.input(configFile, inplace=True): 
-                        print line.replace(pattern, subst),
-                    return Id
-    return None
+                if c['name'] == c_channels['home']['name']:
+                    c_channels['home']['id'] = c['id']
+        if c_channels['report']['id'] == '':
+            for c in channels:
+                if c['name'] == c_channels['report']['name']:
+                    c_channels['report']['id'] = c['id']
+                    Id = c['id']
+        else:
+            Id = c_channels['report']['id']
+        if c_channels['server']['id'] == '':
+            for c in channels:
+                if c['name'] == c_channels['server']['name']:
+                    c_channels['server']['id'] = c['id']
+        config['slack']['channels'] = c_channels
+        save_config(config)
+        return Id
+    else:
+        print('Unable to load Channels')
 
 def fetch_admin():
-    name = ""
-    with open(configFile, "r") as config:
-        lines = config.readlines()
-        for line in lines:
-            content = line.split()
-            if content[0] == '-sa':
-                name = content[1]
-                if len(content) > 2:
-                    return content[2]
-                else:
-                    break
-    if name != "":
-        users_call = slack_client.api_call("users.list")
-        if users_call.get('ok'):
-            users = users_call["members"]
-            for u in users:
-                if u["name"] == name:
-                    Id = u["id"]
-                    pattern="-sa " + name
-                    subst="-sa " + name + " " + Id
-                    for line in fileinput.input(configFile, inplace=True): 
-                        print line.replace(pattern, subst),
-                    return Id
-    return None
-
-def parse_txt_file(filename, key):
-    with open(filename, "r") as file:
-        lines = file.readlines()
-        for line in lines:
-            content = line.split()
-            if content[0] == key:
-                return content[1]
-    return None
+	with open('config.json') as data_file:
+		config = json.load(data_file)
+        root = config['slack']['root']
+        if root['id'] == "":
+            users_call = slack_client.api_call("users.list")
+            if users_call.get('ok'):
+                users = users_call["members"]
+                for u in users:
+                    if u["name"] == root['name']:
+                        Id = u["id"]
+                        config['slack']['root']['id'] = Id
+                        with open('config.json', 'w') as data_file:
+                            data_file.write(json.dumps(config, indent=2, sort_keys=True))
+                        return Id
+        else:
+            return root['id']
 
 if __name__ == "__main__":
     print("Attempting to connect DevBot")
+    logging.info("Begin")
     if slack_client.rtm_connect(with_team_state=False):
-        # Fetch the matching Ids for Admin and Home Channel
-        homeId = fetch_home_channel()
+        # Fetch Ids for Admins and Channels
+        reportId = fetch_channel_ids()
         adminId = fetch_admin()
         # Read bot's user ID by calling Web API method `auth.test`
         botId = slack_client.api_call("auth.test")["user_id"]
         print("DevBot connected and running!")
         slack_client.api_call(
             "chat.postMessage",
-            channel=adminId,
+            channel=reportId,
             text="Online ~ " + datetime.now().strftime('%I:%M:%S %p'),
             icon_emoji=':robot_face:'
         )
@@ -193,24 +177,23 @@ if __name__ == "__main__":
                 time.sleep(RTM_READ_DELAY)
             slack_client.api_call(
                 "chat.postMessage",
-                channel=adminId,
+                channel=reportId,
                 text="Shutdown ~ " + datetime.now().strftime('%I:%M:%S %p'),
                 icon_emoji=':robot_face:'
             )
         except Exception, e:
             slack_client.api_call(
                 "chat.postMessage",
-                channel=adminId,
+                channel=reportId,
                 text="Crashing ~ " + datetime.now().strftime('%I:%M:%S %p') + " -> " + str(e),
                 icon_emoji=':robot_face:'
             )
             os.system("gnome-terminal -- sh -c 'cd scripts; sleep 3; sh bot.sh; exit'")
             slack_client.api_call(
                 "chat.postMessage",
-                channel=adminId,
+                channel=reportId,
                 text="Attempting Auto-Restart...",
                 icon_emoji=':robot_face:'
             )
     else:
-        time.sleep(10)
         print("Connection failed. Exception traceback printed above.")
