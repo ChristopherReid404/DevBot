@@ -10,7 +10,7 @@ sudo chmod 0777 nuke.sh
 sudo chmod 0777 project.sh
 
 # Constant Variables
-configFile="../.config.txt"
+configFile="../config.json"
 keyFile="../.key.txt"
 
 # Running ConfigFile Variable
