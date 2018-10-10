@@ -12,7 +12,7 @@ from commands.serverCommands import handle_server_command
 from commands.botCommands import handle_bot_command
 from commands.weatherCommands import handle_weather_command
 from commands.helpCommands import handle_help_command
-from commands.config_util import load_config, save_config
+from commands.utils import load_config, save_config
 
 # instantiate Slack client
 slack_client = SlackClient(os.environ.get('SLACK_BOT_TOKEN'))
@@ -110,12 +110,13 @@ def fetch_channel_ids():
                 if c['name'] == c_channels['report']['name']:
                     c_channels['report']['id'] = c['id']
                     Id = c['id']
-        else:
-            Id = c_channels['report']['id']
         if c_channels['server']['id'] == '':
             for c in channels:
                 if c['name'] == c_channels['server']['name']:
                     c_channels['server']['id'] = c['id']
+                    Id = c['id']
+        else:
+            Id = c_channels['server']['id']
         config['slack']['channels'] = c_channels
         save_config(config)
         return Id
