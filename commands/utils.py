@@ -45,7 +45,7 @@ def set_slack_admin_id(username, id):
 	save_config(json_data)
 
 def add_project_service(dir, name, delay, order):
-	currentCount = get_project_service_count()
+	currentCount = len(load_config()['project']['services'])
 	if order > currentCount:
 		order = currentCount
 	elif order < 0:
@@ -88,8 +88,9 @@ def set_display_window(top, right, bottom, left):
 	save_config(json_data)
 
 def calculate():
-	project = get_project()
-	display = get_display()
+	config = load_config()
+	project = config['project']
+	display = config['display']
 	terminals = display['terminals']
 	servicesCount = len(project['services'])
 	terminalsCount = terminals['perHeight'] * terminals['perWidth']
