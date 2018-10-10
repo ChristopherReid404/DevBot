@@ -104,8 +104,7 @@ def test_services(services, channel, slack_client):
 	for service in services:
 		port = service['port']
 		try:
-			r = requests.post("htt
-			url = "http://localhost:" + str(port)p://localhost:" + str(port),
+			r = requests.post("http://localhost:" + str(port),
 				json={},
 				headers={
 					"Access-Control-Allow-Origin": "*",
