@@ -34,14 +34,14 @@ def handle_server_command(command, user, channel, adminId, homeId, slack_client)
 			slack_client.api_call(
 				"chat.postMessage",
 				channel=channel,
-				text="Success: %s for %s" % (commands[1], services),
+				text="Success: %s for %s" % (commands[1], commands[2]),
 				icon_emoji=':robot_face:'
 			)
 		else:
 			slack_client.api_call(
 				"chat.postMessage",
 				channel=channel,
-				text="Failure: %s for %s" % (commands[1], services),
+				text="Failure: %s for %s" % (commands[1], commands[2]),
 				icon_emoji=':robot_face:'
 			)
 
@@ -143,7 +143,6 @@ def test_services(services, channel, slack_client):
 			icon_emoji=':robot_face:'
 		)
 		return True
-
 
 def start_services_terminals(services, slack_client):
 	config = load_config()
