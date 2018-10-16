@@ -68,8 +68,6 @@ def server_cycle(command, services, params, channel ,slack_client):
 	# Build
 	if command == 'build' or command == 'start' or command == 'restart':
 		result = run_command_for_services(services, 'docker-compose build', slack_client)
-		if result == False:
-			return False
 
 	# Start
 	if command == 'start' or command == 'restart':
