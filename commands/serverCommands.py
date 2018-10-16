@@ -59,7 +59,7 @@ def server_cycle(command, services, params, channel ,slack_client):
 
 	# Stop
 	if command == 'stop' or command == 'restart':
-		run_command_for_services(services, 'docker-compose down', slack_client)
+		run_command_for_services(services, 'docker-compose stop', slack_client)
 
 	# Purge Dockers
 	if '-purge' in params:
@@ -68,8 +68,6 @@ def server_cycle(command, services, params, channel ,slack_client):
 	# Build
 	if command == 'build' or command == 'start' or command == 'restart':
 		result = run_command_for_services(services, 'docker-compose build', slack_client)
-		if result == False:
-			return False
 
 	# Start
 	if command == 'start' or command == 'restart':
