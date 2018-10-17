@@ -6,14 +6,9 @@
 env/
 *pyc
 
-# Exclude user-download required files
-ngrok
-# Exclude ngrok until finished
-ngrok.sh
-
 # Exclude user-saved data
 .key.txt
 config.json
 
-# Exclude not necessary files
+# Exclude temp data
 TODO.md

@@ -14,17 +14,6 @@ def save_config(json_data):
 	with open('config.json', 'w') as data_file:
 		data_file.write(json.dumps(json_data, indent=2, sort_keys=True))
 
-def get_slack_root():
-	return load_config()['slack']['root']
-
-def set_slack_root_id(id):
-	json_data = load_config()
-	json_data['slack']['root']['id'] = id
-	save_config(json_data)
-
-def get_slack_admins():
-	return load_config()['slack']['admins']
-
 def add_slack_admin(id, username):
 	json_data = load_config()
 	admins = json_data['slack']['admins']
@@ -54,48 +43,9 @@ def set_slack_admin_id(username, id):
 			admin['id'] = id
 	json_data['slack']['admins'] = admins
 	save_config(json_data)
-	
-def get_slack_server_channel():
-	return load_config()['slack']['channels']['server']
-
-def set_slack_server_channel(name, id):
-	json_data = load_config()
-	server_channel = json_data['slack']['channels']['server']
-	server_channel['name'] = name
-	server_channel['id'] = id
-	json_data['slack']['channels']['server'] = server_channel
-	save_config(json_data)
-
-def get_slack_report_channel():
-	return load_config()['slack']['channels']['report']
-
-def set_slack_report_channel(name, id):
-	json_data = load_config()
-	report_channel = json_data['slack']['channels']['report']
-	report_channel['name'] = name
-	report_channel['id'] = id
-	json_data['slack']['channels']['report'] = report_channel
-	save_config(json_data)
-
-def get_project():
-	return load_config()['project']
-
-def set_project_root(name, dir):
-	json_data = load_config()
-	project = json_data['project']
-	project['name'] = name
-	project['dir'] = dir
-	json_data['project'] = project
-	save_config(json_data)
-
-def get_project_services():
-	return load_config()['project']['services']
-
-def get_project_service_count():
-	return len(load_config()['project']['services'])
 
 def add_project_service(dir, name, delay, order):
-	currentCount = get_project_service_count()
+	currentCount = len(load_config()['project']['services'])
 	if order > currentCount:
 		order = currentCount
 	elif order < 0:
@@ -119,9 +69,6 @@ def remove_project_service(name):
 	json_data['project']['services'] = services
 	save_config(json_data)
 
-def get_display():
-	return load_config()['display']
-
 def set_display_terminals(height, width):
 	json_data = load_config()
 	terminals = json_data['display']['terminals']
@@ -141,8 +88,9 @@ def set_display_window(top, right, bottom, left):
 	save_config(json_data)
 
 def calculate():
-	project = get_project()
-	display = get_display()
+	config = load_config()
+	project = config['project']
+	display = config['display']
 	terminals = display['terminals']
 	servicesCount = len(project['services'])
 	terminalsCount = terminals['perHeight'] * terminals['perWidth']

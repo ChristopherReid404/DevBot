@@ -12,34 +12,54 @@ from datetime import datetime
 import errno
 import time
 
-from config_util import get_project, get_slack_server_channel, get_display, load_config, calculate
+from utils import load_config, calculate
 
 # Handles any commands that are prefixed with 'server'
 def handle_server_command(command, user, channel, adminId, homeId, slack_client):
 	commands = command.split()
-	if len(commands) < 2 or commands[1] == 'help':
+	result = None
+	if len(commands) <= 2 or commands[1] == 'help':
 		slack_help_response(slack_client, channel)
 	elif commands[1] == 'start' or commands[1] == 'stop' or commands[1] == 'restart' or commands[1] == 'build':
 		params = ""
 		for param in commands[3:]:
 			params += " %s" % param
-		calculate()
-		server_cycle(commands[1], commands[2], params, slack_client)
+		result = server_cycle(commands[1], commands[2], params, channel, slack_client)
 	elif commands[1] == 'test':
-		test_services(commands[2], slack_client)
-	elif commands[1] == 'push_dockers':
-		push_dockers(commands[2], commands[3], slack_client)
+		result = test_services(commands[2], channel, slack_client)
 	else:
 		slack_help_response(slack_client, channel)
+	if result != None:
+		if result:
+			slack_client.api_call(
+				"chat.postMessage",
+				channel=channel,
+				text="Success: %s for %s" % (commands[1], commands[2]),
+				icon_emoji=':robot_face:'
+			)
+		else:
+			slack_client.api_call(
+				"chat.postMessage",
+				channel=channel,
+				text="Failure: %s for %s" % (commands[1], commands[2]),
+				icon_emoji=':robot_face:'
+			)
 
-def server_cycle(command, services, params, slack_client):
+def server_cycle(command, services, params, channel ,slack_client):
+	slack_client.api_call(
+		"chat.postMessage",
+		channel=channel,
+		text="Beginning %s for %s" % (command, services),
+		icon_emoji=':robot_face:'
+	)
+
 	# Update (Git Pull)
 	if '-pull' in params:
 		project_git_pull()
 
 	# Stop
 	if command == 'stop' or command == 'restart':
-		run_command_for_services(services, 'docker-compose down', slack_client)
+		run_command_for_services(services, 'docker-compose stop', slack_client)
 
 	# Purge Dockers
 	if '-purge' in params:
@@ -48,47 +68,28 @@ def server_cycle(command, services, params, slack_client):
 	# Build
 	if command == 'build' or command == 'start' or command == 'restart':
 		result = run_command_for_services(services, 'docker-compose build', slack_client)
-		if result == False:
-			return 'error'
 
 	# Start
 	if command == 'start' or command == 'restart':
 		start_services_terminals(services, slack_client)
 
-def push_dockers(services, env, slack_client):
-	channel = load_config()['slack']['channels']['server']
+def test_services(services, channel, slack_client):
 	slack_client.api_call(
 		"chat.postMessage",
-		channel=channel['id'],
-		text="Beginning push_docker for %s" % (services),
+		channel=channel,
+		text="Beginning tests for %s" % (services),
 		icon_emoji=':robot_face:'
 	)
-	run_command_for_services(services, 'docker-compose build', slack_client)
-	project = get_project()
-	if services == 'all':
-		services = project['services']
-	else:
-		names = re.split(',', services)
-		services = []
-		for service in project['services']:
-			if service['name'] in names:
-				services.append(service)
-	errors = []
-	for service in services:
-		script = 'cd %s/%s; %s %s' % (project['dir'], service['dir'], 'sh push_docker.sh', env)
-		result = os.system(script)
-		print('Result: %s' % result)
 
-def test_services(services, slack_client):
-	print('Testing...')
-	channel = load_config()['slack']['channels']['server']
+	config = load_config()
+	channel = config['slack']['channels']['server']
+	project = config['project']
 	slack_client.api_call(
 		"chat.postMessage",
 		channel=channel['id'],
 		text="Beginning tests for %s" % (services),
 		icon_emoji=':robot_face:'
 	)
-	project = get_project()
 	if services == 'all':
 		services = project['services']
 	else:
@@ -101,13 +102,15 @@ def test_services(services, slack_client):
 	for service in services:
 		port = service['port']
 		try:
-			url = "http://localhost:" + str(port)
-			r = requests.post(url, json={}, headers={
-				"Access-Control-Allow-Origin": "*",
-				"Accept": "application/json",
-				"Content-Type": "application/json"
-			})
-			print('Code: %s (%s)' % (r.status_code, url))
+			r = requests.post("http://localhost:" + str(port),
+				json={},
+				headers={
+					"Access-Control-Allow-Origin": "*",
+					"Accept": "application/json",
+					"Content-Type": "application/json"
+				}
+			)
+			# So long as it doesn't throw, it's online.
 			slack_client.api_call(
 				"chat.postMessage",
 				channel=channel['id'],
@@ -115,7 +118,6 @@ def test_services(services, slack_client):
 				icon_emoji=':robot_face:'
 			)
 		except Exception, e:
-			print('Error: %s' % e)
 			errors.append(service['name'])
 			slack_client.api_call(
 				"chat.postMessage",
@@ -124,7 +126,6 @@ def test_services(services, slack_client):
 				icon_emoji=':robot_face:'
 			)
 	if len(errors) != 0:
-		channel = get_slack_server_channel()
 		slack_client.api_call(
 			"chat.postMessage",
 			channel=channel['id'],
@@ -141,16 +142,20 @@ def test_services(services, slack_client):
 		)
 		return True
 
-
 def start_services_terminals(services, slack_client):
-	channel = load_config()['slack']['channels']['server']
+	config = load_config()
+	channel = config['slack']['channels']['server']
+	project = config['project']
+
+	# Calculate the needed x,y for terminals
+	calculate()
+
 	slack_client.api_call(
 		"chat.postMessage",
 		channel=channel['id'],
 		text="Beginning 'docker-compose up' for %s" % (services),
 		icon_emoji=':robot_face:'
 	)
-	project = get_project()
 	if services == 'all':
 		services = project['services']
 	else:
@@ -162,10 +167,10 @@ def start_services_terminals(services, slack_client):
 	errors = []
 	t_width = project['t_size']['width']
 	t_height = project['t_size']['height']
-	window = get_display()['window']
+	window = config['display']['window']
 	for service in services:
 		geometry = "%sx%s+%s+%s" % (t_width, t_height, (service['t_x'] + window['leftPadding']), (service['t_y'] + window['topPadding']))
-		command = 'cd %s/%s/hosting; %s' % (project['dir'], service['dir'], 'docker-compose up; exit; exec $SHELL')
+		command = 'cd %s/%s; %s' % (project['dir'], service['dir'], 'docker-compose up; exit; exec $SHELL')
 		script = 'sudo gnome-terminal --geometry %s -- sh -c "%s"' % (geometry, command)
 		slack_client.api_call(
 			"chat.postMessage",
@@ -189,7 +194,6 @@ def start_services_terminals(services, slack_client):
 				icon_emoji=':robot_face:'
 			)
 	if len(errors) != 0:
-		channel = get_slack_server_channel()
 		slack_client.api_call(
 			"chat.postMessage",
 			channel=channel['id'],
@@ -207,15 +211,9 @@ def start_services_terminals(services, slack_client):
 		return True
 
 def run_command_for_services(services, command, slack_client):
-	channel = load_config()['slack']['channels']['server']
-	slack_client.api_call(
-		"chat.postMessage",
-		channel=channel['id'],
-		text="Beginning '%s' for %s" % (command, services),
-		icon_emoji=':robot_face:'
-	)
-	print('Running command: %s' % command)
-	project = get_project()
+	config = load_config()
+	channel = config['slack']['channels']['server']
+	project = config['project']
 	if services == 'all':
 		services = project['services']
 	else:
@@ -249,7 +247,6 @@ def run_command_for_services(services, command, slack_client):
 				icon_emoji=':robot_face:'
 			)
 	if len(errors) != 0:
-		channel = get_slack_server_channel()
 		slack_client.api_call(
 			"chat.postMessage",
 			channel=channel['id'],
@@ -258,21 +255,13 @@ def run_command_for_services(services, command, slack_client):
 		)
 		return False
 	else:
-		slack_client.api_call(
-			"chat.postMessage",
-			channel=channel['id'],
-			text="Successful ran '%s'" % (command),
-			icon_emoji=':robot_face:'
-		)
 		return True
 
 def project_git_pull():
-	print('Git Pull')
-	project = get_project()
-	os.system('cd ../%s; git pull' % project['dir'])
+	project = load_config()['project']
+	os.system('cd %s; git pull' % project['dir'])
 
 def purge_docker():
-	print('Docker Purge')
 	os.system('docker stop $(docker ps -a -q)')
 	os.system('docker rm $(docker ps -a -q)')
 	os.system('docker system prune --force')
@@ -281,6 +270,6 @@ def slack_help_response(slack_client, channel):
 	slack_client.api_call(
 		"chat.postMessage",
 		channel=channel,
-		text="Current supported 'server' format: 'server <command> <services> <params>'\ncommands: build, stop, start, restart\nservices: all, service1,service2\nparams: -pull, -purge",
+		text="Current supported 'server' format: 'server <command> <services> <params>'\ncommands: build, stop, start, restart, test\nservices: all, service1,service2\nparams: -pull, -purge\nParams not available when running 'test'",
 		icon_emoji=':robot_face:'
 	)

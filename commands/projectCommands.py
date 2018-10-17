@@ -85,3 +85,28 @@ def backup_project(commands, user, channel, adminId, homeId, slack_client):
 			icon_emoji=':robot_face:'
 		)
 		return 'error'
+
+# Will be added later with full aws deploy support
+# def push_dockers(services, env, slack_client):
+# 	channel = load_config()['slack']['channels']['server']
+# 	slack_client.api_call(
+# 		"chat.postMessage",
+# 		channel=channel['id'],
+# 		text="Beginning push_docker for %s" % (services),
+# 		icon_emoji=':robot_face:'
+# 	)
+# 	run_command_for_services(services, 'docker-compose build', slack_client)
+# 	project = get_project()
+# 	if services == 'all':
+# 		services = project['services']
+# 	else:
+# 		names = re.split(',', services)
+# 		services = []
+# 		for service in project['services']:
+# 			if service['name'] in names:
+# 				services.append(service)
+# 	errors = []
+# 	for service in services:
+# 		script = 'cd %s/%s; %s %s' % (project['dir'], service['dir'], 'sh push_docker.sh', env)
+# 		result = os.system(script)
+# 		print('Result: %s' % result)

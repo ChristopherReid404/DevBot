@@ -3,11 +3,7 @@ printf "Initializing DevBot...\n"
 
 # Set permissions of required scripts
 sudo chmod 0777 bot.sh
-sudo chmod 0777 docker.sh
 sudo chmod 0777 init.sh
-# sudo chmod 0777 ngrok.sh
-sudo chmod 0777 nuke.sh
-sudo chmod 0777 project.sh
 
 # Constant Variables
 configFile="../config.json"
