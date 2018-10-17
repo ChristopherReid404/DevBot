@@ -46,10 +46,7 @@ def handle_command(command, channel, user):
     response = None
     # This is where you start to implement more commands!
     if command.startswith(SERVER_COMMAND):
-        if user == adminId or channel == homeId:
-            response = handle_server_command(command, user, channel, adminId, homeId, slack_client)
-        else:
-            response = 'unauthorized'
+        response = handle_server_command(command, user, channel, adminId, homeId, slack_client)
     elif command.startswith(BOT_COMMAND):
         response = handle_bot_command(command, user, channel, adminId, homeId, slack_client)
     elif command.startswith(WEATHER_COMMAND):

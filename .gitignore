@@ -15,5 +15,5 @@ ngrok.sh
 .key.txt
 config.json
 
-# Old format
-.config
+# Exclude not necessary files
+TODO.md
