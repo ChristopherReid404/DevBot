@@ -6,7 +6,7 @@ import requests
 import shutil
 import time
 
-VERSION="v1.1.6-beta3"
+VERSION="v1.1.0-beta4"
 
 # Handles any commands that are prefixed with 'bot'
 def handle_bot_command(command, user, channel, adminId, homeId, slack_client):

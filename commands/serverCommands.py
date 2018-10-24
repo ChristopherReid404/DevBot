@@ -59,7 +59,10 @@ def server_cycle(command, services, params, channel ,slack_client):
 
 	# Stop
 	if command == 'stop' or command == 'restart':
-		run_command_for_services(services, 'docker-compose stop', slack_client)
+		if '-hard' in params:
+			run_command_for_services(services, 'docker-compose down', slack_client)
+		else:
+			run_command_for_services(services, 'docker-compose stop', slack_client)
 
 	# Purge Dockers
 	if '-purge' in params:
@@ -270,6 +273,6 @@ def slack_help_response(slack_client, channel):
 	slack_client.api_call(
 		"chat.postMessage",
 		channel=channel,
-		text="Current supported 'server' format: 'server <command> <services> <params>'\ncommands: build, stop, start, restart, test\nservices: all, service1,service2\nparams: -pull, -purge\nParams not available when running 'test'",
+		text="Current supported 'server' format: 'server <command> <services> <params>'\ncommands: build, stop, start, restart, test\nservices: all, service1,service2\nparams: -pull, -purge, -hard\nParams not available when running 'test'",
 		icon_emoji=':robot_face:'
 	)
