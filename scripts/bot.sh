@@ -22,4 +22,4 @@ done < "$keyFile"
 
 # Construct start script to run in terminal
 script="cd ..; source env/bin/activate; export SLACK_BOT_TOKEN='$token'; python devBot.py"
-sudo gnome-terminal -- bash -c "${script}; echo 'Closing...'; sleep 5; exit; exec $SHELL"
+sudo gnome-terminal -geometry 80x8+0+640 -- bash -c "${script}; echo 'Closing...'; sleep 5; exit; exec $SHELL"
