@@ -58,7 +58,7 @@ def server_cycle(command, services, params, channel ,slack_client):
 		project_git_pull()
 
 	# Stop
-	if command == 'stop' or command == 'restart':
+	if command == 'stop' or command == 'restart' or '-hard' in params:
 		if '-hard' in params:
 			run_command_for_services(services, 'docker-compose down', slack_client)
 		else:
